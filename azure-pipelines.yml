@@ -41,7 +41,7 @@ stages:
   jobs:
   - deployment: Deploy
     displayName: Deploy to AKS
-    environment: 'k8sdev.default'
+    environment: 'dev.default'
     pool: 
       vmImage: ubuntu-latest
     strategy:
@@ -56,24 +56,26 @@ stages:
           - task: KubernetesManifest@0
             inputs:
               action: 'createSecret'
-              kubernetesServiceConnection: 'AKS-Cluster-default'
               namespace: 'default'
               secretType: 'dockerRegistry'
               secretName: '$(acrsecret)'
               dockerRegistryEndpoint: 'AKSDocker'
-          - task: replacetokens@3
+          - task: replacetokens@5
             displayName: Replace Tokens
             inputs:
               rootDirectory: '$(Pipeline.Workspace)/manifests/'
               targetFiles: 'deployment.yml'
               encoding: 'auto'
+              tokenPattern: 'custom'
+              tokenPrefix: '#'
+              tokenSuffix: '#'
               writeBOM: true
               actionOnMissing: 'warn'
               keepToken: false
-              tokenPrefix: '#'
-              tokenSuffix: '#'
-              useLegacyPattern: false
+              actionOnNoFiles: 'continue'
               enableTransforms: false
+              enableRecursion: false
+              useLegacyPattern: false
               enableTelemetry: true
           - task: KubernetesManifest@0
             inputs:
